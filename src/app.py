@@ -60,35 +60,6 @@ load_dotenv()
 
 # open_ai_client = OpenAi
 
-calculator_tool = Calculator()
-
-python_tool = PythonTools(run_code=True)
-
-shell_tool = ShellTools()
-file_tool = FileTools()
-
-web_tool = TavilyTools(
-    os.getenv('TAVILY_API_KEY'),
-    use_search_context=True
-)
-
-youtube_tool = YouTubeTools()
-
-finance_tool = YFinanceTools(
-    company_info=True,
-    company_news=True,
-    stock_fundamentals=True,
-    income_statements=True,
-    key_financial_ratios=True,
-    analyst_recommendations=True,
-    technical_indicators=True,
-    historical_prices=True,
-)
-
-
-# crypto_tool = CoinTracker(api_key=None, api_secret=None)
-# print(crypto_tool.get_coin_price('Bitcoin'))
-# exit()
 
 # assistant = Assistant(
 #     tools=[
@@ -118,28 +89,73 @@ database_user = os.getenv('POSTGRES_USER')
 database_password = os.getenv('POSTGRES_PASSWORD')
 database_name = os.getenv('POSTGRES_DB_NAME')
 
-database_url = f"postgresql+psycopg://{database_user}:{database_password}@{database_host}/{database_name}"
 
+database_url = f"postgresql+psycopg://{database_user}:{database_password}@{database_host}/{database_name}"
 print(database_url)
 
 
 if __name__ == "__main__":
     openai_client = OpenAI()
     user_name = input("What is your name ?")
-    santized_username = sanitize_collection_name(user_name)
+    sanitized_username = sanitize_collection_name(user_name)
+    print(sanitized_username)
+    # database_name = sanitized_username or database_name
+
     # print(santized_username.strip())
     # exit()
 
     knowledge_base = AssistantKnowledge(
         vector_db=PgVector2(
-            schema=database_name,
-            collection=f"text_documents",
+            schema=sanitized_username,
+            collection=f"user_info",
             db_url= database_url,
             # embedder=OllamaEmbedder(model="llama3")
             embedder=OpenAIEmbedder(openai_client=openai_client)
         ),
         num_documents=10,
     )
+
+    core_tool = MarvinCore(knowledge_base)
+    calendar_tool = MarvinCalender()
+
+    calculator_tool = Calculator()
+
+    python_tool = PythonTools(run_code=True)
+
+    shell_tool = ShellTools()
+    file_tool = FileTools()
+
+    web_tool = TavilyTools(
+        os.getenv('TAVILY_API_KEY'),
+        use_search_context=True
+    )
+
+    youtube_tool = YouTubeTools()
+
+    finance_tool = YFinanceTools(
+        company_info=True,
+        company_news=True,
+        stock_fundamentals=True,
+        income_statements=True,
+        key_financial_ratios=True,
+        analyst_recommendations=True,
+        technical_indicators=True,
+        historical_prices=True,
+    )
+
+
+    crypto_tool = CoinTracker(api_key=None, api_secret=None)
+
+
+    assistant_tools = [
+        core_tool,
+        calculator_tool,
+        calendar_tool,
+        web_tool,
+        crypto_tool,
+        finance_tool
+    ]
+
     # knowledge_base.clear()
     assistant = Assistant(
         # llm=Ollama(model="llama3"),
@@ -154,7 +170,7 @@ if __name__ == "__main__":
         debug_mode=True,
         show_tool_calls=True,
         knowledge_base=knowledge_base,
-        tools=[MarvinCore(knowledge_base),MarvinCalender(), DuckDuckGo()],
+        tools=assistant_tools,
         add_references_to_prompt=True,
     )
     # exit()

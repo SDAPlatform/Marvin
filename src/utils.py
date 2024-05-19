@@ -33,5 +33,5 @@ def sanitize_collection_name(name: str) -> str:
     if sanitized_name.upper() in reserved_keywords:
         raise ValueError(f"Collection name cannot be a reserved SQL keyword: {sanitized_name}")
 
-    return sanitized_name
+    return sanitized_name.lower()
 
