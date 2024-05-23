@@ -28,6 +28,7 @@ from tools.calendar import MarvinCalender
 from phi.knowledge.text import TextKnowledgeBase
 from phi.vectordb.pgvector import PgVector2
 from phi.embedder.openai import OpenAIEmbedder
+from tools.email import MarvinEmailTool
 
 from utils import list_all_available_openai_models, sanitize_collection_name
 
@@ -117,6 +118,7 @@ if __name__ == "__main__":
 
     core_tool = MarvinCore(knowledge_base)
     calendar_tool = MarvinCalender()
+    email_tool = MarvinEmailTool('gmail_agent_oauth_client_creds.json')
 
     calculator_tool = Calculator()
 
@@ -151,6 +153,7 @@ if __name__ == "__main__":
         core_tool,
         calculator_tool,
         calendar_tool,
+        email_tool,
         web_tool,
         crypto_tool,
         finance_tool
